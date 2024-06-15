@@ -1,0 +1,141 @@
+
+
+<html>
+    <head>
+        <style>
+            table {
+                margin-left: auto;
+                margin-right:auto;
+
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 50%;
+            }
+            p{
+                right:20px;
+            }
+            .backgrounddiv{
+                background-color: white;
+                Position:absolute;
+                width:100%;
+               
+                
+            }
+            form {
+                font-family: "Times New Roman", Times, serif;
+                text-align: right;
+                right: 50px;
+                top: 20px;
+                Position: absolute;
+                z-value = 10;
+
+            }
+            #pos{
+                font-family: "Times New Roman", Times, serif;
+                text-align: right;
+                right: 50px;
+                top: 300px;
+                Position: absolute;
+                z-value=10;
+            }
+            #mainim{
+                z-value=10;
+            }
+            .paragraph{
+                Position: absolute;
+                width: 100%;
+                top: 500px;
+            }
+           
+            td, th {
+                font-family: "Times New Roman", Times, serif;
+                border: 1px solid #333333;
+                text-align: center;
+                padding: 8px;
+            }
+
+    </style>
+
+    </head>
+
+    <body>
+        <div class = 'backgrounddiv'>
+            <form id = 'forms' name = 'forms' action = '' method = 'GET'>
+                {{med_form.as_p}}
+                {{coord_form.as_p}}
+                <input type = 'submit' value = "Save"/>
+            </form>
+
+            
+            {%if temp%}
+                <p id = "pos">Position X =  Position Y = </p>
+                <a href = "{{temp.filtered_images.url}}">
+                    <img name = "mainim" id ="mainim" src= "{{temp.filtered_images.url}}" alt="img" onclick = 'getCord(event)'>
+                </a>
+            {%else%}
+                <p>No such heatmaps</p>
+            {%endif%}
+        </div>
+
+        <div class= "paragraph">
+            <p>Since the first scan in 1971, computed tomography scans (CT scans) have been a cornerstone of medical imaging technology. A CT scan works by taking hundreds of X-ray images in succession at different angles and then combining them together to form a collection of cross-sectional images that make up the 3-dimensional scan.</p>
+
+            <p>Measuring the dimensions of bones on a large set of CT scans is laborious and time-consuming. One question is whether or not there is an easy way to automate measurements on a CT scan for a large number of patients. One area where measuring the depth of bones is important is in using plates to fix distal radius fractures. Knowledge of the depth of the distal radius is useful in choosing screws that are not too long or too short.</p>
+
+            <p>The solution to this problem that this website interfaces with uses a predictive machine learning model to approximate the overall boundary of the distal radius without having to measure every slice of a CT scan.</p>
+
+            <p>The algorithm starts by having the user outline a single cross-sectional image. The machine learning model uses this first image as a prior to inform how it should create the boundary for the next slice of the wrist. The algorithm then repeats this process using the last slice as the prior for the next.</p>
+
+            <p>Once all of the boundaries have been constructed, then a dataset is created that aggregates the images together to create a thickness heatmap of the set of CT scans.</p>
+
+            <p>This is a web interface that accesses this database. The user can select a set of patient characteristics that define a subset of the database. A heatmap is generated which represents the depth of the distal radius at different locations. To receive information about a point, the user can enter a set of coordinates, the thickness of which will be displayed on the screen. Clicking on the image itself gives the coordinates of where the mouse is.</p>
+
+            <p>Credits for the machine learning model go to Jay Pratap, Harvard.</p>
+        </div>
+    <body>
+    <script>
+        var elm = document.getElementById("mainim");
+        elm.addEventListener("mousedown", getCord, false);
+
+    
+        function getCord(ev)
+        {
+            if (ev.target.tagName === 'IMG')
+                ev.preventDefault();
+            var bnds = ev.target.getBoundingClientRect();
+            let x = Math.round((event.clientX - bnds.left-80)*80/397);
+            let y = Math.round((ev.clientY - bnds.top-93)*39/297);
+            var pelem = document.getElementById("pos");
+            
+            if (x > 80 || x < 0){
+                x = "NA";
+            } 
+            if (y > 39 || y <0){
+                y= "NA";
+            }
+
+            pelem.innerHTML = "Position X = " + x + " Position Y = " + y;
+            document.getElementById({{coord_form.x_coord.auto_id}}).value = x;
+            document.getElementById({{coord_form.y_coord.auto_id}}).value = y;
+            $.ajax({
+                type: "GET",
+                url: '',
+                data: {
+                    "x": x,
+                    "y": y
+                },
+                dataType: "json",
+                success: function (data) {
+                    // any process in data
+                    alert("successfull")
+                },
+                failure: function () {
+                    alert("failure");
+                }
+            });
+        }
+
+      
+        
+    </script>
+</html>
